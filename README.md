@@ -127,21 +127,70 @@ src/
 
 ## 🌐 Deployment
 
-This project can be deployed on:
+### Vercel (推荐) - 自动部署已配置 ✅
 
-- **Vercel** (Recommended): Seamless deployment with the Vercel platform
-- **Netlify**: Configure environment variables in deployment settings
-- **Other platforms**: Any platform that supports Node.js and Next.js
+这个项目已经完全配置好了Vercel自动部署：
 
-### Environment Variables for Production
+#### 🚀 快速部署步骤
 
-Make sure to set these environment variables in your deployment platform:
+1. **Fork并连接仓库**
+   - Fork这个GitHub仓库到你的账户
+   - 访问 [Vercel官网](https://vercel.com) 并登录
+   - 点击 "New Project" 并选择你fork的仓库
+   - Vercel会自动检测Next.js配置
+
+2. **设置环境变量**
+   在Vercel项目设置中添加：
+   ```env
+   OPENROUTER_API_KEY=你的API密钥
+   OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+   OPENROUTER_MODEL=deepseek/deepseek-chat-v3-0324:free
+   ```
+
+3. **自动部署特性**
+   - ✅ 每次推送到 `main` 分支自动部署到生产环境
+   - ✅ Pull Request 自动创建预览部署
+   - ✅ 支持回滚和分支部署
+   - ✅ 内置CI/CD流程（代码检查、构建、部署）
+
+4. **查看详细指南**
+   - 📖 查看 [DEPLOYMENT.md](./DEPLOYMENT.md) 获取完整部署指南
+   - 🔧 配置文件：`vercel.json` 和 `.github/workflows/deploy.yml`
+
+#### 🔄 自动部署流程
+
+```mermaid
+graph LR
+    A[推送代码] --> B[GitHub检测更改]
+    B --> C[Vercel自动构建]
+    C --> D[运行测试]
+    D --> E[部署到生产环境]
+    E --> F[发送通知]
+```
+
+### 其他部署平台
+
+- **Netlify**: 需要手动配置环境变量
+- **Railway**: 支持自动部署
+- **AWS/Google Cloud**: 需要容器化配置
+- **其他平台**: 任何支持Node.js 18+和Next.js的平台
+
+### 🔑 生产环境变量
+
+确保在部署平台中设置以下环境变量：
 
 ```env
+# 必需 - AI功能
 OPENROUTER_API_KEY=your_production_api_key
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=deepseek/deepseek-chat-v3-0324:free
+
+# 可选 - 高级功能
+NODE_ENV=production
+NEXT_TELEMETRY_DISABLED=1
 ```
+
+> **⚠️ 重要**: 如果不设置API环境变量，AI建议功能将使用fallback模式，但其他功能正常工作。
 
 ## 🔒 Security Notes
 
