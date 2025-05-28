@@ -1,13 +1,20 @@
 {
-  "name": "nextjs-shadcn",
+  "name": "text-shaped-image-merge",
   "version": "0.1.0",
   "private": true,
+  "description": "A modern web application that automatically arranges your images into text shapes",
+  "keywords": ["nextjs", "react", "canvas", "image-processing", "ai", "vercel"],
   "scripts": {
     "dev": "next dev -H 0.0.0.0 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "bunx biome lint --write && bunx tsc --noEmit",
-    "format": "bunx biome format --write"
+    "lint:check": "bunx biome lint && bunx tsc --noEmit",
+    "format": "bunx biome format --write",
+    "format:check": "bunx biome format",
+    "type-check": "bunx tsc --noEmit",
+    "vercel-build": "npm run build",
+    "preview": "npm run build && npm run start"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.15",
@@ -39,5 +46,9 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
