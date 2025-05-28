@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  distDir: 'out',
+  // Removed static export config to enable API routes
+  // output: 'export',
+  // distDir: 'out',
   trailingSlash: true,
   images: {
     unoptimized: true,
@@ -33,6 +34,10 @@ const nextConfig = {
         pathname: "/**",
       },
     ],
+  },
+  // Enable experimental features for better performance
+  experimental: {
+    serverComponentsExternalPackages: [],
   },
 };
 

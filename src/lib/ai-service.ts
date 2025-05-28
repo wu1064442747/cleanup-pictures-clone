@@ -1,14 +1,10 @@
 /**
- * AI service, used to interact with the OpenRouter API, call DeepSeek model
+ * AI service client - calls our Next.js API route instead of directly calling external APIs
  */
 
 import { z } from 'zod';
 
-const OPENROUTER_API_KEY = "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";
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
-const MODEL = "deepseek/deepseek-chat-v3-0324:free";
-
-// Define schema for AI input
+// Define schema for AI input validation
 const aiInputSchema = z.object({
   text: z.string().min(1).max(30),
   imageCount: z.number().int().positive(),
@@ -27,48 +23,45 @@ export interface AIDesignRequest {
 }
 
 /**
- * Get AI design suggestions based on text and image count
+ * Get AI design suggestions by calling our Next.js API route
+ * This ensures the API call happens on the server side
  * @param request The request containing text and image count
  * @returns AI design suggestions
  */
 export async function getAIDesignSuggestions(request: AIDesignRequest): Promise<AIDesignResponse> {
-  // Simulate AI design suggestions
-  // In a real app, this would make an API call to a model like DeepSeek
-  
-  const { text, imageCount } = request;
-  
-  // Simple suggestion logic
-  let suggestions = `For your text "${text}" with ${imageCount} images, `;
-  suggestions += `consider arranging the images in a grid pattern that follows the text outline.`;
-  
-  const layoutAdvice = imageCount < 5 
-    ? "With fewer images, use larger image sizes to fill the text shape effectively."
-    : "With many images, use smaller image sizes for a more detailed text shape.";
-  
-  const fontRecommendations = [
-    "Arial Bold",
-    "Impact",
-    "Times New Roman Bold"
-  ];
-  
-  // Simulate a delay like a real API call
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  return {
-    suggestions,
-    layoutAdvice,
-    fontRecommendations
-  };
+  try {
+    // Validate input
+    const validatedInput = aiInputSchema.parse(request);
+    
+    // Call our Next.js API route
+    const response = await fetch('/api/ai-suggestions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(validatedInput),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`API call failed: ${response.status} ${errorData.error || 'Unknown error'}`);
+    }
+
+    const result = await response.json();
+    return result as AIDesignResponse;
+
+  } catch (error) {
+    console.error('Failed to get AI design suggestions:', error);
+    
+    // Return fallback response if API call fails
+    return generateFallbackResponse(request);
+  }
 }
 
 /**
- * Mock AI response for demonstration
- * In a real application, this would be replaced with actual AI API calls
+ * Generate fallback response when API calls fail
  */
-function mockAIResponse(prompt: z.infer<typeof aiInputSchema>): AIDesignResponse {
-  // Generate suggestions based on text
-  let suggestions = '';
-  let layoutAdvice = '';
+function generateFallbackResponse({ text, imageCount }: AIDesignRequest): AIDesignResponse {
   const fontOptions = [
     'Arial', 'Times New Roman', 'Courier New', 'Impact', 'Comic Sans MS',
     'Georgia', 'Verdana', 'Helvetica', 'Tahoma', 'Trebuchet MS'
@@ -76,23 +69,26 @@ function mockAIResponse(prompt: z.infer<typeof aiInputSchema>): AIDesignResponse
 
   // Choose 3 random fonts
   const fonts = [];
+  const shuffledFonts = [...fontOptions];
   for (let i = 0; i < 3; i++) {
-    const randomIndex = Math.floor(Math.random() * fontOptions.length);
-    fonts.push(fontOptions[randomIndex]);
-    fontOptions.splice(randomIndex, 1);
+    const randomIndex = Math.floor(Math.random() * shuffledFonts.length);
+    fonts.push(shuffledFonts[randomIndex]);
+    shuffledFonts.splice(randomIndex, 1);
   }
   
   // Generate contextual suggestions
-  if (prompt.text.length <= 3) {
+  let suggestions = '';
+  if (text.length <= 3) {
     suggestions = "For short text, arrange images in a dense pattern to clearly define the letter shapes. Vary image sizes for visual interest.";
   } else {
     suggestions = "Images should be evenly distributed throughout the text shape for balanced visual impact.";
   }
   
   // Generate layout advice based on image count
-  if (prompt.imageCount < 5) {
+  let layoutAdvice = '';
+  if (imageCount < 5) {
     layoutAdvice = "With fewer images, use a bold font and larger image sizes to fill the text shape effectively.";
-  } else if (prompt.imageCount > 15) {
+  } else if (imageCount > 15) {
     layoutAdvice = "With many images, use a clean font and smaller image sizes for a more detailed text shape.";
   } else {
     layoutAdvice = "Recommend using a bold font with the text centered in the composition.";
